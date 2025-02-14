@@ -1,58 +1,113 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { SendIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Layout from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
+import { formatDistanceToNow } from "date-fns";
+
+type Post = {
+  id: string;
+  text: string;
+  created_at: string;
+  user_id: string;
+  users: {
+    email: string;
+  };
+};
 
 const Index = () => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      text: "Just flew by someone interesting!",
-      timestamp: "2m ago",
-      user: {
-        username: "Alex",
-        avatar: "/placeholder.svg"
-      }
-    },
-    {
-      id: 2,
-      text: "Looking forward to meeting new people today.",
-      timestamp: "5m ago",
-      user: {
-        username: "Sarah",
-        avatar: "/placeholder.svg"
-      }
-    },
-    {
-      id: 3,
-      text: "Great conversation with someone I flew by yesterday!",
-      timestamp: "15m ago",
-      user: {
-        username: "Mike",
-        avatar: "/placeholder.svg"
-      }
-    },
-  ]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [newPost, setNewPost] = useState("");
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handlePost = () => {
-    if (newPost.trim()) {
-      setPosts([
+  useEffect(() => {
+    fetchPosts();
+    
+    // Subscribe to new posts
+    const channel = supabase
+      .channel('posts_channel')
+      .on(
+        'postgres_changes',
         {
-          id: Date.now(),
-          text: newPost,
-          timestamp: "Just now",
-          user: {
-            username: "User123",
-            avatar: "/placeholder.svg"
-          }
+          event: 'INSERT',
+          schema: 'public',
+          table: 'posts'
         },
-        ...posts,
-      ]);
+        (payload) => {
+          setPosts(current => [payload.new as Post, ...current]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          id,
+          text,
+          created_at,
+          user_id,
+          users:user_id (
+            email
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPosts(data || []);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load posts. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePost = async () => {
+    if (!newPost.trim()) return;
+    
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .insert([
+          {
+            text: newPost,
+            user_id: user?.id
+          }
+        ]);
+
+      if (error) throw error;
+      
       setNewPost("");
+      toast({
+        title: "Success",
+        description: "Post created successfully!"
+      });
+    } catch (error) {
+      console.error('Error creating post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create post. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,9 +123,13 @@ const Index = () => {
             placeholder="What's on your mind?"
             className="resize-none"
           />
-          <Button onClick={handlePost} className="w-full">
+          <Button 
+            onClick={handlePost} 
+            className="w-full"
+            disabled={isLoading}
+          >
             <SendIcon className="h-4 w-4 mr-2" />
-            Post
+            {isLoading ? 'Posting...' : 'Post'}
           </Button>
         </div>
 
@@ -82,12 +141,15 @@ const Index = () => {
             >
               <div className="flex items-center space-x-3 mb-3">
                 <Avatar>
-                  <AvatarImage src={post.user.avatar} alt={post.user.username} />
-                  <AvatarFallback>{post.user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback>
+                    {post.users.email.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{post.user.username}</p>
-                  <p className="text-sm text-muted-foreground">{post.timestamp}</p>
+                  <p className="font-medium">{post.users.email}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                  </p>
                 </div>
               </div>
               <p className="text-card-foreground">{post.text}</p>
