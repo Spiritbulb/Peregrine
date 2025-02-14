@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { UserScanIcon } from "lucide-react";
+import { ScanIcon } from "lucide-react";
 
 const Scan = () => {
   const [isScanning, setIsScanning] = useState(false);
@@ -24,7 +24,7 @@ const Scan = () => {
                 : "border-muted-foreground"
             }`}
           >
-            <UserScanIcon
+            <ScanIcon
               className={`h-16 w-16 ${
                 isScanning ? "text-primary" : "text-muted-foreground"
               }`}

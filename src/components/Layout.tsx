@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { HomeIcon, UserScanIcon, UserPlusIcon } from "lucide-react";
+import { HomeIcon, ScanIcon, UsersIcon } from "lucide-react";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -19,14 +19,14 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               to="/scan"
               className="flex flex-col items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              <UserScanIcon className="h-6 w-6" />
+              <ScanIcon className="h-6 w-6" />
               <span className="mt-1">Scan</span>
             </Link>
             <Link
               to="/flew-by"
               className="flex flex-col items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              <UserPlusIcon className="h-6 w-6" />
+              <UsersIcon className="h-6 w-6" />
               <span className="mt-1">Flew By</span>
             </Link>
           </div>
