@@ -1,14 +1,14 @@
 
 import { Preferences } from '@capacitor/preferences';
 import { Toast } from '@capacitor/toast';
-import { StatusBar } from '@capacitor/status-bar';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 
 // Initialize native features
 export const initializeNative = async () => {
   try {
     await StatusBar.setBackgroundColor({ color: '#ffffff' });
-    await StatusBar.setStyle({ style: 'dark' });
+    await StatusBar.setStyle({ style: Style.Dark });
     await SplashScreen.hide();
   } catch (error) {
     console.log('Running in web mode');
