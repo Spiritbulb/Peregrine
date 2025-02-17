@@ -17,7 +17,7 @@ type Post = {
   user_id: string;
   profiles: {
     email: string;
-  };
+  } | null;
 };
 
 const Index = () => {
@@ -56,19 +56,11 @@ const Index = () => {
     try {
       const { data, error } = await supabase
         .from('posts')
-        .select(`
-          id,
-          text,
-          created_at,
-          user_id,
-          profiles (
-            email
-          )
-        `)
+        .select('*, profiles(email)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPosts(data || []);
+      setPosts(data as Post[] || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({
@@ -80,7 +72,7 @@ const Index = () => {
   };
 
   const handlePost = async () => {
-    if (!newPost.trim()) return;
+    if (!newPost.trim() || !user) return;
     
     setIsLoading(true);
     try {
@@ -89,7 +81,7 @@ const Index = () => {
         .insert([
           {
             text: newPost,
-            user_id: user?.id
+            user_id: user.id
           }
         ]);
 
@@ -143,11 +135,11 @@ const Index = () => {
               <div className="flex items-center space-x-3 mb-3">
                 <Avatar>
                   <AvatarFallback>
-                    {post.profiles.email.slice(0, 2).toUpperCase()}
+                    {post.profiles?.email.slice(0, 2).toUpperCase() || 'UN'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{post.profiles.email}</p>
+                  <p className="font-medium">{post.profiles?.email || 'Unknown User'}</p>
                   <p className="text-sm text-muted-foreground">
                     {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                   </p>
