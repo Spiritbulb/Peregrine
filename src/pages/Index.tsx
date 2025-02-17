@@ -15,7 +15,7 @@ type Post = {
   text: string;
   created_at: string;
   user_id: string;
-  users: {
+  profiles: {
     email: string;
   };
 };
@@ -60,7 +60,7 @@ const Index = () => {
           text,
           created_at,
           user_id,
-          users:user_id (
+          profiles!posts_user_id_fkey (
             email
           )
         `)
@@ -142,11 +142,11 @@ const Index = () => {
               <div className="flex items-center space-x-3 mb-3">
                 <Avatar>
                   <AvatarFallback>
-                    {post.users.email.slice(0, 2).toUpperCase()}
+                    {post.profiles.email.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{post.users.email}</p>
+                  <p className="font-medium">{post.profiles.email}</p>
                   <p className="text-sm text-muted-foreground">
                     {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                   </p>
