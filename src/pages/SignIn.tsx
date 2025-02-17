@@ -59,7 +59,7 @@ const SignIn = () => {
     <div className="container flex items-center justify-center min-h-screen">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold">Welcome to Flewby</h1>
+          <h1 className="text-2xl font-bold">Welcome to Peregrine</h1>
           <p className="text-muted-foreground mt-2">
             {isSignUp ? 'Create an account' : 'Sign in to your account'}
           </p>
