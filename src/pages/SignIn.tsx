@@ -31,9 +31,23 @@ const SignIn = () => {
         navigate('/');
       }
     } catch (error) {
+      console.error('Authentication error:', error);
+      let errorMessage = 'An error occurred during authentication.';
+      
+      if (error instanceof Error) {
+        // Handle specific error messages
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Invalid email or password. Please try again.';
+        } else if (error.message.includes('User already registered')) {
+          errorMessage = 'This email is already registered. Please sign in instead.';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Please check your email and verify your account before signing in.';
+        }
+      }
+      
       toast({
         title: 'Error',
-        description: (error as Error).message,
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
