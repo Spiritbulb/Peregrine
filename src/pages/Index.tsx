@@ -41,7 +41,8 @@ const Index = () => {
           table: 'posts'
         },
         (payload) => {
-          setPosts(current => [payload.new as Post, ...current]);
+          // When a new post is added, fetch all posts to get the associated profile data
+          fetchPosts();
         }
       )
       .subscribe();
@@ -60,7 +61,7 @@ const Index = () => {
           text,
           created_at,
           user_id,
-          profiles!posts_user_id_fkey (
+          profiles (
             email
           )
         `)
